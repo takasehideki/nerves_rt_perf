@@ -3,10 +3,12 @@ defmodule BasePerf do
   require NervesRtPerf
 
   def eval(param) do
-    # generate process for output of measurement logs
-    pid = spawn(NervesRtPerf, :output, [self()])
+    # prepare log file
+    filename = "/tmp/" <> to_string(__MODULE__) <> "_" <> param <> "_" <> Time.to_string(Time.utc_now()) <> ".csv"
+    File.write filename, "count,time,heap_size,minor_gcs\r\n"
 
-    IO.puts("Evaluation start")
+    # generate process for output of measurement logs
+    pid = spawn(NervesRtPerf, :output, [self(), filename])
 
     case param do
       "normal" ->
@@ -23,8 +25,9 @@ defmodule BasePerf do
       n when n > NervesRtPerf.eval_num() ->
         IO.puts("Evaluation end")
 
-      # sleep at first time to justify measurement
+      # sleep at first evaluation to justify measurement
       0 ->
+        IO.puts("Evaluation start")
         :timer.sleep(5)
         eval_loop(count + 1, "", pid)
 
@@ -45,7 +48,7 @@ defmodule BasePerf do
                  },#{Process.info(self())[:garbage_collection][:minor_gcs]}"}
             )
 
-            # sleep at first time of log interval to justify measurement
+            # sleep at first on log interval to justify measurement
             :timer.sleep(1000)
             NervesRtPerf.fib()
             eval_loop(count + 1, "", pid)

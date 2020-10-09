@@ -7,11 +7,12 @@ defmodule NervesRtPerf do
   # defmacro logout_num, do: 1_000
   defmacro logout_num, do: 100
 
-  def output(pid) do
+  def output(pid, filename) do
     receive do
       {:ok, str} ->
-        IO.puts(str)
-        output(pid)
+        File.write filename, str, [:append]
+        # IO.puts(str)
+        output(pid, filename)
     end
   end
 
