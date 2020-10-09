@@ -10,7 +10,7 @@ defmodule NervesRtPerf do
   def output(pid, filename) do
     receive do
       {:ok, str} ->
-        File.write filename, str, [:append]
+        File.write(filename, str, [:append])
         # IO.puts(str)
         output(pid, filename)
     end
@@ -22,9 +22,20 @@ defmodule NervesRtPerf do
     |> Enum.reduce(fn x, acc -> x + acc end)
   end
 
-  @fib_num 10
-  def fib(0) do 0 end
-  def fib(1) do 1 end
-  def fib(n) do fib(n - 1) + fib(n - 2) end
-  def fib do fib(@fib_num) end
+  @fib_num 15
+  def fib(0) do
+    0
+  end
+
+  def fib(1) do
+    1
+  end
+
+  def fib(n) do
+    fib(n - 1) + fib(n - 2)
+  end
+
+  def fib do
+    fib(@fib_num)
+  end
 end

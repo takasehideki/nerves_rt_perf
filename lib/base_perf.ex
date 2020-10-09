@@ -4,8 +4,11 @@ defmodule BasePerf do
 
   def eval(param) do
     # prepare log file
-    filename = "/tmp/" <> to_string(__MODULE__) <> "_" <> param <> "_" <> Time.to_string(Time.utc_now()) <> ".csv"
-    File.write filename, "count,time,heap_size,minor_gcs\r\n"
+    filename =
+      "/tmp/" <>
+        to_string(__MODULE__) <> "_" <> param <> "-" <> Time.to_string(Time.utc_now()) <> ".csv"
+
+    File.write(filename, "count,time,heap_size,minor_gcs\r\n")
 
     # generate process for output of measurement logs
     pid = spawn(NervesRtPerf, :output, [self(), filename])
