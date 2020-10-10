@@ -23,52 +23,39 @@ defmodule BasePerf do
   end
 
   # loop for evaluation
-  def eval_loop(count, str, pid) do
+  def eval_loop(count, results, pid) do
     case count do
       n when n > NervesRtPerf.eval_num() ->
         IO.puts("Evaluation end")
 
-      # sleep at first evaluation to justify measurement
+      # sleep at first on the loop to justify measurement
       0 ->
         IO.puts("Evaluation start")
         :timer.sleep(5)
-        eval_loop(count + 1, "", pid)
+        eval_loop(count + 1, results, pid)
 
       _ ->
+        # measurement point
         time_before = :erlang.now()
         NervesRtPerf.fib()
         time_after = :erlang.now()
 
+        result =
+          "#{count},#{:timer.now_diff(time_after, time_before)},#{
+            Process.info(self())[:heap_size]
+          },#{Process.info(self())[:garbage_collection][:minor_gcs]}\r\n"
+
         case rem(count, NervesRtPerf.logout_num()) do
           # send measurement log to output process
           0 ->
-            send(
-              pid,
-              {:ok,
-               str <>
-                 "\r\n#{count},#{:timer.now_diff(time_after, time_before)},#{
-                   Process.info(self())[:heap_size]
-                 },#{Process.info(self())[:garbage_collection][:minor_gcs]}"}
-            )
-
-            # sleep at first on log interval to justify measurement
+            send(pid, {:ok, results <> result})
+            # sleep to wait log output
             :timer.sleep(1000)
-            NervesRtPerf.fib()
-            eval_loop(count + 1, "", pid)
 
-          # ignore at first time of log interval to justify measurement
-          1 ->
-            eval_loop(count + 1, str, pid)
+            eval_loop(count + 1, result, pid)
 
           _ ->
-            eval_loop(
-              count + 1,
-              str <>
-                "\r\n#{count},#{:timer.now_diff(time_after, time_before)},#{
-                  Process.info(self())[:heap_size]
-                },#{Process.info(self())[:garbage_collection][:minor_gcs]}",
-              pid
-            )
+            eval_loop(count + 1, results <> result, pid)
         end
     end
   end
