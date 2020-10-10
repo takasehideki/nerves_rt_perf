@@ -1,16 +1,16 @@
 defmodule NervesRtPerf do
   # macro definitions for const value
   # loop count for evaluation
-  defmacro eval_num, do: 1_000_000
+  defmacro eval_num, do: 100_000
   # output count to log file for evaluation
-  defmacro logout_num, do: 1_000
+  defmacro logout_num, do: 100
 
-  def output(pid, filename) do
+  def output(pid, filepath) do
     receive do
       {:ok, results} ->
-        File.write(filename, results, [:append])
+        File.write(filepath, results, [:append])
         # IO.inspect(result)
-        output(pid, filename)
+        output(pid, filepath)
     end
   end
 
