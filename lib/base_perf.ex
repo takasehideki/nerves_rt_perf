@@ -37,12 +37,14 @@ defmodule BasePerf do
   def eval_loop(count, pid) do
     case count do
       # write results to the log file
-      n when n > NervesRtPerf.loop_eval_num() ->
+      n when n > NervesRtPerf.eval_loop_num() ->
         send(pid, {:ok})
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
+        :ok
 
       0 ->
         IO.puts("Evaluation start:" <> Time.to_string(Time.utc_now()))
+        :timer.sleep(5)
         eval_loop(count + 1, pid)
 
       _ ->
@@ -55,20 +57,16 @@ defmodule BasePerf do
         time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
 
         result =
-          "#{count - NervesRtPerf.ignore_eval_num()},#{time},#{Process.info(self())[:heap_size]},#{
+          "#{count},#{time},#{Process.info(self())[:heap_size]},#{
             Process.info(self())[:garbage_collection][:minor_gcs]
           }\r\n"
 
-        case count do
-          # ignore result at first 100 evaluations
-          n when n <= NervesRtPerf.ignore_eval_num() ->
-            eval_loop(count + 1, pid)
+        # send measurement result to output process
+        send(pid, {:ok, result})
+        # sleep to wait output process
+        :timer.sleep(5)
 
-          _ ->
-            # send measurement result to output process
-            send(pid, {:ok, result})
-            eval_loop(count + 1, pid)
-        end
+        eval_loop(count + 1, pid)
     end
   end
 end

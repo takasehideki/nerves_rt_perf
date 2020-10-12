@@ -1,9 +1,6 @@
 defmodule NervesRtPerf do
-  ## macro definitions for evaluation loop
-  # output count to log file for evaluation
-  defmacro ignore_eval_num, do: 100
-  # loop count for evaluation
-  defmacro loop_eval_num, do: 100_000 + ignore_eval_num()
+  # macro definition for evaluation loop count
+  defmacro eval_loop_num, do: 100_000
 
   def output(pid, filepath, results) do
     receive do
