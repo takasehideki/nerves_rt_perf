@@ -35,4 +35,20 @@ defmodule NervesRtPerf do
   def fib(n) do
     fib(n - 1) + fib(n - 2)
   end
+
+  defmacro led_duration, do: 1
+  defmacro led_pin, do: 26
+
+  def lchika(led) do
+    Circuits.GPIO.write(led, 1)
+    Circuits.GPIO.write(led, 0)
+  end
+
+  def lchika_duration(led, duration) do
+    Circuits.GPIO.write(led, 1)
+    :timer.sleep(duration)
+    Circuits.GPIO.write(led, 0)
+    :timer.sleep(duration)
+  end
+
 end
