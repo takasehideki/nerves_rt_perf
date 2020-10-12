@@ -1,6 +1,7 @@
 defmodule BasePerf do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
+  @eval_loop_num NervesRtPerf.eval_loop_num()
   @sum_num NervesRtPerf.sum_num()
   @fib_num NervesRtPerf.fib_num()
 
@@ -37,7 +38,7 @@ defmodule BasePerf do
   def eval_loop(count, pid) do
     case count do
       # write results to the log file
-      n when n > NervesRtPerf.eval_loop_num() ->
+      n when n > @eval_loop_num ->
         send(pid, {:ok})
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
         :ok
