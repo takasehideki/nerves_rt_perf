@@ -45,6 +45,9 @@ defmodule BasePerf do
 
       0 ->
         IO.puts("Evaluation start:" <> Time.to_string(Time.utc_now()))
+        # ignore evaluation for the first time to avoid cache influence
+        NervesRtPerf.sum(@sum_num)
+        NervesRtPerf.fib(@fib_num)
         :timer.sleep(5)
         eval_loop(count + 1, pid)
 
