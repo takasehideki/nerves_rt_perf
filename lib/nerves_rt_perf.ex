@@ -1,26 +1,32 @@
 defmodule NervesRtPerf do
-  # macro definitions for const value
-  # loop count for evaluation
-  defmacro eval_num, do: 100_000
+  ## macro definitions for evaluation loop
   # output count to log file for evaluation
-  defmacro logout_num, do: 100
+  defmacro ignore_eval_num, do: 100
+  # loop count for evaluation
+  defmacro loop_eval_num, do: 100_000 + ignore_eval_num()
 
-  def output(pid, filepath) do
+  def output(pid, filepath, results) do
     receive do
-      {:ok, results} ->
-        File.write(filepath, results, [:append])
+      {:ok, result} ->
         # IO.inspect(result)
-        output(pid, filepath)
+        results = results <> result
+        output(pid, filepath, results)
+
+      {:ok} ->
+        File.write(filepath, results, [:append])
     end
   end
 
-  @sum_num 15
-  def sum() do
-    1..@sum_num
+  ## function for evaluation
+  defmacro sum_num, do: 15
+
+  def sum(n) do
+    1..n
     |> Enum.reduce(fn x, acc -> x + acc end)
   end
 
-  @fib_num 25
+  defmacro fib_num, do: 15
+
   def fib(0) do
     0
   end
@@ -31,9 +37,5 @@ defmodule NervesRtPerf do
 
   def fib(n) do
     fib(n - 1) + fib(n - 2)
-  end
-
-  def fib do
-    fib(@fib_num)
   end
 end

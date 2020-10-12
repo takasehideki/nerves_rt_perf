@@ -1,6 +1,10 @@
 defmodule BasePerf do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
+  @sum_num NervesRtPerf.sum_num()
+  @fib_num NervesRtPerf.fib_num()
+
+  # obtain target name
   @target System.get_env("MIX_TARGET")
 
   def eval(param) do
@@ -18,11 +22,11 @@ defmodule BasePerf do
     File.write(filepath, "count,time,heap_size,minor_gcs\r\n")
 
     # generate process for output of measurement logs
-    pid = spawn(NervesRtPerf, :output, [self(), filepath])
+    pid = spawn(NervesRtPerf, :output, [self(), filepath, ""])
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, "", pid], [])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
 
       _ ->
         IO.puts("Argument error")
@@ -30,39 +34,40 @@ defmodule BasePerf do
   end
 
   # loop for evaluation
-  def eval_loop(count, results, pid) do
+  def eval_loop(count, pid) do
     case count do
-      n when n > NervesRtPerf.eval_num() ->
+      # write results to the log file
+      n when n > NervesRtPerf.loop_eval_num() ->
+        send(pid, {:ok})
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
 
-      # sleep at first on the loop to justify measurement
       0 ->
         IO.puts("Evaluation start:" <> Time.to_string(Time.utc_now()))
-        :timer.sleep(5)
-        eval_loop(count + 1, results, pid)
+        eval_loop(count + 1, pid)
 
       _ ->
         # measurement point
-        time_before = :erlang.now()
-        NervesRtPerf.fib()
-        time_after = :erlang.now()
+        # {eval, _} = :timer.tc(NervesRtPerf, :fib, [])
+        t1 = :erlang.monotonic_time()
+        NervesRtPerf.sum(@sum_num)
+        NervesRtPerf.fib(@fib_num)
+        t2 = :erlang.monotonic_time()
+        time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
 
         result =
-          "#{count},#{:timer.now_diff(time_after, time_before)},#{
-            Process.info(self())[:heap_size]
-          },#{Process.info(self())[:garbage_collection][:minor_gcs]}\r\n"
+          "#{count - NervesRtPerf.ignore_eval_num()},#{time},#{Process.info(self())[:heap_size]},#{
+            Process.info(self())[:garbage_collection][:minor_gcs]
+          }\r\n"
 
-        case rem(count, NervesRtPerf.logout_num()) do
-          # send measurement log to output process
-          0 ->
-            send(pid, {:ok, results <> result})
-            # sleep to wait log output
-            :timer.sleep(1000)
-
-            eval_loop(count + 1, result, pid)
+        case count do
+          # ignore result at first 100 evaluations
+          n when n <= NervesRtPerf.ignore_eval_num() ->
+            eval_loop(count + 1, pid)
 
           _ ->
-            eval_loop(count + 1, results <> result, pid)
+            # send measurement result to output process
+            send(pid, {:ok, result})
+            eval_loop(count + 1, pid)
         end
     end
   end
