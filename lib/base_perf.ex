@@ -23,7 +23,7 @@ defmodule BasePerf do
     File.write(filepath, "count,time,heap_size,minor_gcs\r\n")
 
     # generate process for output of measurement logs
-    pid = spawn(NervesRtPerf, :output, [self(), filepath, ""])
+    pid = spawn(NervesRtPerf, :output, [filepath, ""])
 
     case param do
       "normal" ->

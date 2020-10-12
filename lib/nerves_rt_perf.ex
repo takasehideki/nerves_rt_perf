@@ -1,13 +1,13 @@
 defmodule NervesRtPerf do
   # macro definition for evaluation loop count
-  defmacro eval_loop_num, do: 100_000
+  defmacro eval_loop_num, do: 100
 
-  def output(pid, filepath, results) do
+  def output(filepath, results) do
     receive do
       {:ok, result} ->
         # IO.inspect(result)
         results = results <> result
-        output(pid, filepath, results)
+        output(filepath, results)
 
       {:ok} ->
         File.write(filepath, results, [:append])
@@ -50,5 +50,4 @@ defmodule NervesRtPerf do
     Circuits.GPIO.write(led, 0)
     :timer.sleep(duration)
   end
-
 end
