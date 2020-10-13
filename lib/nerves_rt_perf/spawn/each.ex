@@ -28,7 +28,7 @@ defmodule NervesRtPerf.Spawn.Each do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid_output], [])
+        Process.spawn(__MODULE__, :eval_loop, [1, pid_output], [])
 
       _ ->
         IO.puts("Argument error")

@@ -32,7 +32,7 @@ defmodule NervesRtPerf.Base.Lchika do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid, led], [])
+        Process.spawn(__MODULE__, :eval_loop, [1, pid, led], [])
 
       _ ->
         IO.puts("Argument error")

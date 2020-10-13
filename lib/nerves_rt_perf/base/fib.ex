@@ -27,7 +27,7 @@ defmodule NervesRtPerf.Base.Fib do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
 
       _ ->
         IO.puts("Argument error")
