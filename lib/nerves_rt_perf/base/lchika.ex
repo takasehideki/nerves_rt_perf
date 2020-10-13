@@ -3,7 +3,7 @@ defmodule NervesRtPerf.Base.Lchika do
   require NervesRtPerf
   @eval_loop_num NervesRtPerf.eval_loop_num()
   @led_pin NervesRtPerf.led_pin()
-  # @led_duration NervesRtPerf.led_duration()
+  @led_duration NervesRtPerf.led_duration()
 
   # obtain target name
   @target System.get_env("MIX_TARGET")
@@ -57,10 +57,9 @@ defmodule NervesRtPerf.Base.Lchika do
 
       _ ->
         # measurement point
-        # {eval, _} = :timer.tc(NervesRtPerf, :fib, [])
         t1 = :erlang.monotonic_time()
-        NervesRtPerf.lchika(led)
-        # NervesRtPerf.lchika_duration(led, @led_duration)
+        # NervesRtPerf.lchika(led)
+        NervesRtPerf.lchika_duration(led, @led_duration)
         t2 = :erlang.monotonic_time()
         time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
 

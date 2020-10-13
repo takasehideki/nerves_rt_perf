@@ -52,7 +52,6 @@ defmodule NervesRtPerf.Base.Sum do
 
       _ ->
         # measurement point
-        # {eval, _} = :timer.tc(NervesRtPerf, :fib, [])
         t1 = :erlang.monotonic_time()
         NervesRtPerf.sum(@sum_num)
         t2 = :erlang.monotonic_time()
