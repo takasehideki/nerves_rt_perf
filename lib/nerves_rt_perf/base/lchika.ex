@@ -1,4 +1,4 @@
-defmodule BaseLed do
+defmodule NervesRtPerf.Base.Lchika do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   @eval_loop_num NervesRtPerf.eval_loop_num()
@@ -12,7 +12,8 @@ defmodule BaseLed do
     # prepare log file
     filename =
       (@target <> to_string(__MODULE__) <> "_" <> param <> "-" <> Time.to_string(Time.utc_now()))
-      |> String.replace("Elixir.", "-")
+      |> String.replace("Elixir.NervesRtPerf.", "-")
+      |> String.replace(".", "-")
       |> String.replace(":", "")
       # eliminate under second
       |> String.slice(0..-8)
@@ -23,7 +24,7 @@ defmodule BaseLed do
     File.write(filepath, "count,time,heap_size,minor_gcs\r\n")
 
     # generate process for output of measurement logs
-    pid = spawn(NervesRtPerf, :output, [self(), filepath, ""])
+    pid = spawn(NervesRtPerf, :output, [filepath, ""])
 
     # generate object to handle LED
     {:ok, led} = Circuits.GPIO.open(@led_pin, :output)

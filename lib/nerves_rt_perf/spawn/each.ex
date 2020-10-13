@@ -1,4 +1,4 @@
-defmodule BaseSpawnEachPerf do
+defmodule NervesRtPerf.Spawn.Each do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   @eval_loop_num NervesRtPerf.eval_loop_num()
@@ -12,7 +12,8 @@ defmodule BaseSpawnEachPerf do
     # prepare log file
     filename =
       (@target <> to_string(__MODULE__) <> "_" <> param <> "-" <> Time.to_string(Time.utc_now()))
-      |> String.replace("Elixir.", "-")
+      |> String.replace("Elixir.NervesRtPerf.", "-")
+      |> String.replace(".", "-")
       |> String.replace(":", "")
       # eliminate under second
       |> String.slice(0..-8)
@@ -50,9 +51,7 @@ defmodule BaseSpawnEachPerf do
 
         # send measurement result to output process
         send(pid_output, {:ok, result})
-
     end
-
   end
 
   # loop for evaluation
