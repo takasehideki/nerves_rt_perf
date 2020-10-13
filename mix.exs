@@ -39,7 +39,7 @@ defmodule NervesRtPerf.MixProject do
   defp deps do
     [
       # Dependencies for all targets
-      {:nerves, "~> 1.6.3", runtime: false},
+      {:nerves, "~> 1.7.0", runtime: false},
       {:shoehorn, "~> 0.6.0"},
       {:ring_logger, "~> 0.8.1"},
       {:toolshed, "~> 0.2.13"},
