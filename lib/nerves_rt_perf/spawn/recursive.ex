@@ -36,6 +36,9 @@ defmodule NervesRtPerf.Spawn.Recursive do
   end
 
   def eval_spawn(pid_output) do
+    # sleep on each iteration
+    :timer.sleep(5)
+
     receive do
       {:ok, count} ->
         # measurement point

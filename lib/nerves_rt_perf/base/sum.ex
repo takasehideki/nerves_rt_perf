@@ -36,6 +36,9 @@ defmodule NervesRtPerf.Base.Sum do
 
   # loop for evaluation
   def eval_loop(count, pid) do
+    # sleep on each iteration
+    :timer.sleep(5)
+
     case count do
       # write results to the log file
       n when n > @eval_loop_num ->
