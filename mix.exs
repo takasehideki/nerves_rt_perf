@@ -40,7 +40,7 @@ defmodule NervesRtPerf.MixProject do
     [
       # Dependencies for all targets
       {:nerves, "~> 1.7.0", runtime: false},
-      {:shoehorn, "~> 0.6.0"},
+      {:shoehorn, "~> 0.7.0"},
       {:ring_logger, "~> 0.8.1"},
       {:toolshed, "~> 0.2.13"},
       {:circuits_gpio, "~> 0.4"},
@@ -50,14 +50,14 @@ defmodule NervesRtPerf.MixProject do
       {:nerves_pack, "~> 0.4.0", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi, "~> 1.12", runtime: false, targets: :rpi},
-      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0},
-      {:nerves_system_rpi2, "~> 1.12", runtime: false, targets: :rpi2},
-      {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: :rpi3},
-      {:nerves_system_rpi3a, "~> 1.12", runtime: false, targets: :rpi3a},
-      {:nerves_system_rpi4, "~> 1.12", runtime: false, targets: :rpi4},
-      {:nerves_system_bbb, "~> 2.7", runtime: false, targets: :bbb},
-      {:nerves_system_x86_64, "~> 1.12", runtime: false, targets: :x86_64}
+      {:nerves_system_rpi, "~> 1.13", runtime: false, targets: :rpi},
+      {:nerves_system_rpi0, "~> 1.13", runtime: false, targets: :rpi0},
+      {:nerves_system_rpi2, "~> 1.13", runtime: false, targets: :rpi2},
+      {:nerves_system_rpi3, "~> 1.13", runtime: false, targets: :rpi3},
+      {:nerves_system_rpi3a, "~> 1.13", runtime: false, targets: :rpi3a},
+      {:nerves_system_rpi4, "~> 1.13", runtime: false, targets: :rpi4},
+      {:nerves_system_bbb, "~> 2.8", runtime: false, targets: :bbb},
+      {:nerves_system_x86_64, "~> 1.13", runtime: false, targets: :x86_64}
     ]
   end
 
