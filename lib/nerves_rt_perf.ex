@@ -50,4 +50,6 @@ defmodule NervesRtPerf do
     Circuits.GPIO.write(led, 0)
     :timer.sleep(duration)
   end
+
+  defmacro sleep_interval, do: 10
 end
