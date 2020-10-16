@@ -6,6 +6,7 @@ defmodule NervesRtPerf.Base.All do
   @fib_num NervesRtPerf.fib_num()
   @led_pin NervesRtPerf.led_pin()
   # @led_duration NervesRtPerf.led_duration()
+  @sleep_interval NervesRtPerf.sleep_interval()
 
   # obtain target name
   @target System.get_env("MIX_TARGET")
@@ -60,6 +61,7 @@ defmodule NervesRtPerf.Base.All do
         NervesRtPerf.sum(@sum_num)
         NervesRtPerf.fib(@fib_num)
         NervesRtPerf.lchika(led)
+        :timer.sleep(@sleep_interval)
         :timer.sleep(5)
         eval_loop(count + 1, pid, led)
 
@@ -70,6 +72,7 @@ defmodule NervesRtPerf.Base.All do
         NervesRtPerf.sum(@sum_num)
         NervesRtPerf.fib(@fib_num)
         NervesRtPerf.lchika(led)
+        :timer.sleep(@sleep_interval)
         # NervesRtPerf.lchika_duration(led, @led_duration)
         t2 = :erlang.monotonic_time()
         time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
