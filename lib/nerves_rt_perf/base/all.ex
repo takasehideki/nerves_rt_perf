@@ -4,8 +4,6 @@ defmodule NervesRtPerf.Base.All do
   @eval_loop_num NervesRtPerf.eval_loop_num()
   @sum_num NervesRtPerf.sum_num()
   @fib_num NervesRtPerf.fib_num()
-  @led_pin NervesRtPerf.led_pin()
-  # @led_duration NervesRtPerf.led_duration()
   @sleep_interval NervesRtPerf.sleep_interval()
 
   # obtain target name
@@ -29,13 +27,9 @@ defmodule NervesRtPerf.Base.All do
     # generate process for output of measurement logs
     pid = spawn(NervesRtPerf, :output, [filepath, ""])
 
-    # generate object to handle LED
-    {:ok, led} = Circuits.GPIO.open(@led_pin, :output)
-    :timer.sleep(10)
-
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid, led], [])
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
 
       _ ->
         IO.puts("Argument error")
@@ -43,7 +37,7 @@ defmodule NervesRtPerf.Base.All do
   end
 
   # loop for evaluation
-  def eval_loop(count, pid, led) do
+  def eval_loop(count, pid) do
     # sleep on each iteration
     :timer.sleep(5)
 
@@ -52,7 +46,6 @@ defmodule NervesRtPerf.Base.All do
       n when n > @eval_loop_num ->
         send(pid, {:ok})
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
-        Circuits.GPIO.close(led)
         :ok
 
       0 ->
@@ -60,10 +53,9 @@ defmodule NervesRtPerf.Base.All do
         # ignore evaluation for the first time to avoid cache influence
         NervesRtPerf.sum(@sum_num)
         NervesRtPerf.fib(@fib_num)
-        NervesRtPerf.lchika(led)
         :timer.sleep(@sleep_interval)
         :timer.sleep(5)
-        eval_loop(count + 1, pid, led)
+        eval_loop(count + 1, pid)
 
       _ ->
         # measurement point
@@ -71,9 +63,7 @@ defmodule NervesRtPerf.Base.All do
         t1 = :erlang.monotonic_time()
         NervesRtPerf.sum(@sum_num)
         NervesRtPerf.fib(@fib_num)
-        NervesRtPerf.lchika(led)
         :timer.sleep(@sleep_interval)
-        # NervesRtPerf.lchika_duration(led, @led_duration)
         t2 = :erlang.monotonic_time()
         time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
 
@@ -87,7 +77,7 @@ defmodule NervesRtPerf.Base.All do
         # sleep to wait output process
         :timer.sleep(5)
 
-        eval_loop(count + 1, pid, led)
+        eval_loop(count + 1, pid)
     end
   end
 end
