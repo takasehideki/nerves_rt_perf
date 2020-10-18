@@ -50,7 +50,7 @@ defmodule NervesRtPerf.MixProject do
       {:nerves_pack, "~> 0.4.0", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi3, github: "nerves-project/nerves_system_rpi3", branch: "linux-5.4", targets: :rpi3, nerves: [compile: true]}
+      {:nerves_system_rpi3, github: "nerves-project/nerves_system_rpi3", branch: "linux-5.4-rt", targets: :rpi3, nerves: [compile: true]}
       ## NOTE: ./deps/nerves_system_rpi3/mix.exs should be edited by the follow
       # {:nerves_system_br, github: "nerves-project/nerves_system_br", branch: "bump-rpi", runtime: false},
     ]
