@@ -41,6 +41,9 @@ defmodule NervesRtPerf.GcFsa.Sleep do
       "65535" ->
         Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 65535}])
 
+      "131071" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 131071}])
+
       _ ->
         IO.puts("Argument error")
     end
