@@ -51,6 +51,7 @@ defmodule NervesRtPerf.Base.Gpiowrite do
       n when n > @eval_loop_num ->
         send(pid, {:ok})
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
+        GPIO.close(gpio)
         :ok
 
       0 ->
@@ -76,6 +77,9 @@ defmodule NervesRtPerf.Base.Gpiowrite do
           "#{count},#{time_1},#{time_0},#{Process.info(self())[:heap_size]},#{
             Process.info(self())[:garbage_collection][:minor_gcs]
           }\r\n"
+
+        # close gpio pin
+        GPIO.close(gpio)
 
         # send measurement result to output process
         send(pid, {:ok, result})
