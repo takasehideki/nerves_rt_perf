@@ -1,4 +1,4 @@
-defmodule NervesRtPerf.Priority.Gpioread do
+defmodule NervesRtPerf.Base.Gpioread do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   alias Circuits.GPIO
@@ -31,6 +31,12 @@ defmodule NervesRtPerf.Priority.Gpioread do
     case param do
       "normal" ->
         Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+
+      "low" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:priority, :low}])
+
+      "high"->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:priority, :high}])
 
       _ ->
         IO.puts("Argument error")

@@ -1,4 +1,4 @@
-defmodule NervesRtPerf.Priority.Gpioread do
+defmodule NervesRtPerf.GcMin.Gpiowrite do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   alias Circuits.GPIO
@@ -23,7 +23,7 @@ defmodule NervesRtPerf.Priority.Gpioread do
     filepath = "/tmp/" <> filename <> ".csv"
     IO.puts("result log file: " <> filepath)
 
-    File.write(filepath, "count,time,onoff,heap_size,minor_gcs\r\n")
+    File.write(filepath, "count,time_for_write_1,time_for_write_0,heap_size,minor_gcs\r\n")
 
     # generate process for output of measurement logs
     pid = spawn(NervesRtPerf, :output, [filepath, ""])
@@ -31,6 +31,18 @@ defmodule NervesRtPerf.Priority.Gpioread do
     case param do
       "normal" ->
         Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+
+      "34" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 34}])
+
+      "233" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 233}])
+
+      "6765" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 6765}])
+
+      "196418" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 196_418}])
 
       _ ->
         IO.puts("Argument error")
@@ -44,7 +56,7 @@ defmodule NervesRtPerf.Priority.Gpioread do
 
     # open the pin
     {pin_num, _} = Integer.parse(@gpio_pin)
-    {:ok, gpio} = GPIO.open(pin_num, :input)
+    {:ok, gpio} = GPIO.open(pin_num, :output)
 
     case count do
       # write results to the log file
@@ -57,19 +69,24 @@ defmodule NervesRtPerf.Priority.Gpioread do
       0 ->
         IO.puts("Evaluation start:" <> Time.to_string(Time.utc_now()))
         # ignore evaluation for the first time to avoid cache influence
-        GPIO.read(gpio)
+        GPIO.write(gpio, 1)
+        :timer.sleep(5)
+        GPIO.write(gpio, 0)
         :timer.sleep(5)
         eval_loop(count + 1, pid)
 
       _ ->
         # measurement point
         t1 = :erlang.monotonic_time()
-        onoff = GPIO.read(gpio)
+        GPIO.write(gpio, 1)
         t2 = :erlang.monotonic_time()
-        time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
+        GPIO.write(gpio, 0)
+        t3 = :erlang.monotonic_time()
+        time_1 = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
+        time_0 = :erlang.convert_time_unit(t3 - t2, :native, :microsecond)
 
         result =
-          "#{count},#{time},#{onoff},#{Process.info(self())[:heap_size]},#{
+          "#{count},#{time_1},#{time_0},#{Process.info(self())[:heap_size]},#{
             Process.info(self())[:garbage_collection][:minor_gcs]
           }\r\n"
 

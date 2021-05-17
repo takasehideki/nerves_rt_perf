@@ -1,10 +1,9 @@
-defmodule NervesRtPerf.Base.GenserverGpiowrite do
-  use GenServer
+defmodule NervesRtPerf.CpuFreq.Gpiowrite do
+  # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   alias Circuits.GPIO
-
-  # macro setting for const value (defined by NervesRtPerf)
   @eval_loop_num NervesRtPerf.eval_loop_num()
+  @governor_file "/sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
 
   # obtain target name
   @target System.get_env("MIX_TARGET")
@@ -32,6 +31,16 @@ defmodule NervesRtPerf.Base.GenserverGpiowrite do
 
     case param do
       "normal" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+
+      "performance" ->
+        File.write(@governor_file, "performance")
+        :timer.sleep(100)
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+
+      "powersave" ->
+        File.write(@governor_file, "powersave")
+        :timer.sleep(100)
         Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
 
       _ ->

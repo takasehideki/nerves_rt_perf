@@ -1,8 +1,9 @@
-defmodule NervesRtPerf.Priority.Gpioread do
+defmodule NervesRtPerf.CpuFreq.Gpioread do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   alias Circuits.GPIO
   @eval_loop_num NervesRtPerf.eval_loop_num()
+  @governor_file "/sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
 
   # obtain target name
   @target System.get_env("MIX_TARGET")
@@ -30,6 +31,16 @@ defmodule NervesRtPerf.Priority.Gpioread do
 
     case param do
       "normal" ->
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+
+      "performance" ->
+        File.write(@governor_file, "performance")
+        :timer.sleep(100)
+        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+
+      "powersave" ->
+        File.write(@governor_file, "powersave")
+        :timer.sleep(100)
         Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
 
       _ ->
