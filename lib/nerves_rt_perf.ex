@@ -185,3 +185,35 @@ defmodule NervesRtPerf.Driver do
 
   end
 end
+
+defmodule NervesRtPerf.NodeConnect do
+  def start(name, conn_node_ip, cookie) do
+    # ノードの開始
+    System.cmd("epmd", ["-daemon"])
+    ip_addr = hd(tl(Application.get_env(:mdns_lite, :host))) <> ".local"
+    case name do
+      "Alice" ->
+        Node.start(:"#{name}@#{ip_addr}")
+      "Bob" ->
+        Node.start(:"#{name}@#{ip_addr}")
+      _ ->
+        IO.puts("Argument Error")
+    end
+    Node.set_cookie(:"#{cookie}")
+
+    # ノードの接続
+    # Bobから先に立ち上げ, あとからAliceでconnectを行わないとここは正しく動作しない.
+    case name do
+      "Alice" ->
+        conn_node = :"Bob@#{conn_node_ip}"
+        Node.connect(conn_node)
+        conn_node
+      "Bob" ->
+        conn_node = :"Alice@#{conn_node_ip}"
+        conn_node
+      _ ->
+        IO.puts("Argument Error")
+    end
+  end
+
+end
