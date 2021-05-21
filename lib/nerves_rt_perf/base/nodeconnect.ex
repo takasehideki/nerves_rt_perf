@@ -6,10 +6,10 @@ defmodule NervesRtPerf.Base.Nodeconnect do
   # obtain target name
   @target System.get_env("MIX_TARGET")
 
-  def eval(param, name, conn_node_ip, cookie) do
+  def eval(param, name) do
     # prepare log file
     filename =
-      (@target <> to_string(__MODULE__) <> "_" <> param <> "-" <> Time.to_string(Time.utc_now()) <> "_" <> name)
+      (@target <> to_string(__MODULE__)  <> "_" <> name <> "_" <> param <> "-" <> Time.to_string(Time.utc_now()))
       |> String.replace("Elixir.NervesRtPerf.", "-")
       |> String.replace(".", "-")
       |> String.replace(":", "")
@@ -26,11 +26,11 @@ defmodule NervesRtPerf.Base.Nodeconnect do
       "Alice" ->
         # time_1: デバイス内で送信開始から送信終了までにかかった時間, time_2: 送信から受信終了までにかかった時間,
         File.write(filepath, "count,time_1,time_2,heap_size,minor_gcs\r\n")
-        conn_node = NervesRtPerf.NodeConnect.start(name, conn_node_ip, cookie)
+        conn_node = NervesRtPerf.NodeConnect.start(name)
 
         case param do
           "normal" ->
-            ppid = Node.spawn(conn_node, __MODULE__, :eval_loop_alice, [1, pid, self()])
+            ppid = Node.spawn(conn_node, __MODULE__, :eval_loop_bob, [1, pid, self()])
             Process.spawn(__MODULE__, :eval_loop_alice, [1, pid, ppid], [])
 
           _ ->
@@ -39,7 +39,7 @@ defmodule NervesRtPerf.Base.Nodeconnect do
 
       "Bob" ->
         File.write(filepath, "count,time_1,heap_size,minor_gcs\r\n")
-        _conn_node = NervesRtPerf.NodeConnect.start(name, conn_node_ip, cookie)
+        _conn_node = NervesRtPerf.NodeConnect.start(name)
 
       _ ->
         IO.puts("Argument Error")
@@ -59,6 +59,7 @@ defmodule NervesRtPerf.Base.Nodeconnect do
       n when n > @eval_loop_num ->
         send(pid, :ok)
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
+        Node.stop
         :ok
 
       0 ->
@@ -134,8 +135,9 @@ defmodule NervesRtPerf.Base.Nodeconnect do
     case count do
       n when n >= @eval_loop_num ->
         Node.stop
+        :ok
       _ ->
-        nil
+        :ok
     end
   end
 end

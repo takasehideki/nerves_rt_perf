@@ -187,29 +187,35 @@ defmodule NervesRtPerf.Driver do
 end
 
 defmodule NervesRtPerf.NodeConnect do
-  def start(name, conn_node_ip, cookie) do
-    # ノードの開始
+  # obtain IP address
+  @my_ip System.get_env("MY_IP")
+  @conn_ip System.get_env("CONN_IP")
+
+  # obtain cookie
+  @cookie System.get_env("COOKIE")
+
+  def start(name) do
+    # Node start
     System.cmd("epmd", ["-daemon"])
-    ip_addr = hd(tl(Application.get_env(:mdns_lite, :host))) <> ".local"
     case name do
       "Alice" ->
-        Node.start(:"#{name}@#{ip_addr}")
+        Node.start(:"#{name}@#{@my_ip}")
       "Bob" ->
-        Node.start(:"#{name}@#{ip_addr}")
+        Node.start(:"#{name}@#{@my_ip}")
       _ ->
         IO.puts("Argument Error")
     end
-    Node.set_cookie(:"#{cookie}")
+    Node.set_cookie(:"#{@cookie}")
 
-    # ノードの接続
-    # Bobから先に立ち上げ, あとからAliceでconnectを行わないとここは正しく動作しない.
+    # Node connect
+    # It doesn't work well unless Node "Bob" is started before "Alice" starts.
     case name do
       "Alice" ->
-        conn_node = :"Bob@#{conn_node_ip}"
+        conn_node = :"Bob@#{@conn_ip}"
         Node.connect(conn_node)
         conn_node
       "Bob" ->
-        conn_node = :"Alice@#{conn_node_ip}"
+        conn_node = :"Alice@#{@conn_ip}"
         conn_node
       _ ->
         IO.puts("Argument Error")
