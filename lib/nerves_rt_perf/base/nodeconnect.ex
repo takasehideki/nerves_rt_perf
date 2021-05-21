@@ -7,42 +7,60 @@ defmodule NervesRtPerf.Base.Nodeconnect do
   @target System.get_env("MIX_TARGET")
 
   def eval(param, name) do
-    # prepare log file
-    filename =
-      (@target <> to_string(__MODULE__)  <> "_" <> name <> "_" <> param <> "-" <> Time.to_string(Time.utc_now()))
-      |> String.replace("Elixir.NervesRtPerf.", "-")
-      |> String.replace(".", "-")
-      |> String.replace(":", "")
-      # eliminate under second
-      |> String.slice(0..-8)
+    case param do
+      "normal" ->
 
-    filepath = "/tmp/" <> filename <> ".csv"
-    IO.puts("result log file: " <> filepath)
+        case name do
+          "Alice" ->
+            # prepare log file for Alice
+            filename_alice =
+              (@target <> to_string(__MODULE__)  <> "_Alice_" <> param <> "-" <> Time.to_string(Time.utc_now()))
+              |> String.replace("Elixir.NervesRtPerf.", "-")
+              |> String.replace(".", "-")
+              |> String.replace(":", "")
+              # eliminate under second
+              |> String.slice(0..-8)
+            filepath_alice = "/tmp/" <> filename_alice <> ".csv"
+            IO.puts("result log file in Alice: " <> filepath_alice)
+            # generate process for output of measurement logs
+            alice_output_pid = spawn(NervesRtPerf, :output, [filepath_alice, ""])
+            # time_1: デバイス内で送信開始から送信終了までにかかった時間, time_2: 送信終了から受信終了までにかかった時間
+            File.write(filepath_alice, "count,time_1,time_2,heap_size,minor_gcs\r\n")
 
-    # generate process for output of measurement logs
-    pid = spawn(NervesRtPerf, :output, [filepath, ""])
+            # prepare log file for Bob
+            filename_bob =
+              (@target <> to_string(__MODULE__)  <> "_Bob_" <> param <> "-" <> Time.to_string(Time.utc_now()))
+              |> String.replace("Elixir.NervesRtPerf.", "-")
+              |> String.replace(".", "-")
+              |> String.replace(":", "")
+              # eliminate under second
+              |> String.slice(0..-8)
+            filepath_bob = "/tmp/" <> filename_bob <> ".csv"
+            IO.puts("result log file in Bob: " <> filepath_bob)
+            # generate process for output of measurement logs
+            bob_output_pid = spawn(NervesRtPerf, :output, [filepath_bob, ""])
+            # time: デバイス内で受信完了してから送信終了までにかかった時間
+            File.write(filepath_alice, "count,time,heap_size,minor_gcs\r\n")
 
-    case name do
-      "Alice" ->
-        # time_1: デバイス内で送信開始から送信終了までにかかった時間, time_2: 送信から受信終了までにかかった時間,
-        File.write(filepath, "count,time_1,time_2,heap_size,minor_gcs\r\n")
-        conn_node = NervesRtPerf.NodeConnect.start(name)
+            # start node and connect with "Bob"
+            conn_node = NervesRtPerf.NodeConnect.start(name)
 
-        case param do
-          "normal" ->
-            ppid = Node.spawn(conn_node, __MODULE__, :eval_loop_bob, [1, pid, self()])
-            Process.spawn(__MODULE__, :eval_loop_alice, [1, pid, ppid], [])
+            # start process in "Bob"
+            ppid = Node.spawn(conn_node, __MODULE__, :eval_loop_bob, [0, bob_output_pid])
+
+            # start evaluation process in "Alice"
+            Process.spawn(__MODULE__, :eval_loop_alice, [0, alice_output_pid, ppid], [])
+
+          "Bob" ->
+            # start node
+            _conn_node = NervesRtPerf.NodeConnect.start(name)
 
           _ ->
-            IO.puts("Argument error")
+            IO.puts("Argument Error")
         end
 
-      "Bob" ->
-        File.write(filepath, "count,time_1,heap_size,minor_gcs\r\n")
-        _conn_node = NervesRtPerf.NodeConnect.start(name)
-
       _ ->
-        IO.puts("Argument Error")
+        IO.puts("Argument error")
     end
   end
 
@@ -65,42 +83,42 @@ defmodule NervesRtPerf.Base.Nodeconnect do
       0 ->
         IO.puts("Evaluation start:" <> Time.to_string(Time.utc_now()))
         # ignore evaluation for the first time to avoid cache influence
-        send(ppid, {:hi, self()})
+        send(ppid, {:hi,self()})
 
         receive do
-          :accept -> nil
+          :accept ->
+            :timer.sleep(50)
+            eval_loop_alice(count + 1, pid, ppid)
         end
-        :timer.sleep(50)
-        eval_loop_alice(count + 1, pid, ppid)
 
       _ ->
         # measurement point
         t1 = :erlang.monotonic_time()
-        send(ppid, {:hi, self()})
+        send(ppid, {:hi,self()})
         t2 = :erlang.monotonic_time()
         receive do
           :accept -> nil
+          t3 = :erlang.monotonic_time()
+
+          time_1 = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
+          time_2 = :erlang.convert_time_unit(t3 - t2, :native, :microsecond)
+
+          result =
+            "#{count},#{time_1},#{time_2},#{Process.info(self())[:heap_size]},#{
+              Process.info(self())[:garbage_collection][:minor_gcs]
+            }\r\n"
+
+          # send measurement result to output process
+          send(pid, {:ok, result})
+          # sleep to wait output process
+          :timer.sleep(50)
+
+          eval_loop_alice(count + 1, pid, ppid)
         end
-        t3 = :erlang.monotonic_time()
-
-        time_1 = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
-        time_2 = :erlang.convert_time_unit(t3 - t2, :native, :microsecond)
-
-        result =
-          "#{count},#{time_1},#{time_2},#{Process.info(self())[:heap_size]},#{
-            Process.info(self())[:garbage_collection][:minor_gcs]
-          }\r\n"
-
-        # send measurement result to output process
-        send(pid, {:ok, result})
-        # sleep to wait output process
-        :timer.sleep(50)
-
-        eval_loop_alice(count + 1, pid, ppid)
     end
   end
 
-  def eval_loop_bob(count, pid, ppid) do
+  def eval_loop_bob(count, pid) do
     # Called by Alice after both Alice and Bob started.
     # pid: output
     # ppid: Process in node "Alice"
@@ -108,14 +126,14 @@ defmodule NervesRtPerf.Base.Nodeconnect do
       0 ->
         # ignore evaluation for the first time to avoid cache influence
         receive do
-          :hi ->
+          {:hi, ppid} ->
             send(ppid, :accept)
         end
-        eval_loop_bob(count + 1, pid, ppid)
+        eval_loop_bob(count + 1, pid)
 
       _ ->
         receive do
-          :hi ->
+          {:hi, ppid} ->
             t1 = :erlang.monotonic_time()
             send(ppid, :accept)
             t2 = :erlang.monotonic_time()
@@ -129,15 +147,12 @@ defmodule NervesRtPerf.Base.Nodeconnect do
 
             # send measurement result to output process
             send(pid, {:ok, result})
+
+            if count >= @eval_loop_num do
+              Node.stop
+            end
         end
-        eval_loop_bob(count + 1, pid, ppid)
-    end
-    case count do
-      n when n >= @eval_loop_num ->
-        Node.stop
-        :ok
-      _ ->
-        :ok
+        eval_loop_bob(count + 1, pid)
     end
   end
 end
