@@ -22,10 +22,10 @@ defmodule NervesRtPerf.Base.Nodeconnect do
               |> String.slice(0..-8)
             filepath_alice = "/tmp/" <> filename_alice <> ".csv"
             IO.puts("result log file in Alice: " <> filepath_alice)
-            # generate process for output of measurement logs
-            alice_output_pid = spawn(NervesRtPerf, :output, [filepath_alice, ""])
             # time_1: デバイス内で送信開始から送信終了までにかかった時間, time_2: 送信終了から受信終了までにかかった時間
             File.write(filepath_alice, "count,time_1,time_2,heap_size,minor_gcs\r\n")
+            # generate process for output of measurement logs
+            alice_output_pid = spawn(NervesRtPerf, :output, [filepath_alice, ""])
 
             # prepare log file for Bob
             filename_bob =
@@ -37,10 +37,10 @@ defmodule NervesRtPerf.Base.Nodeconnect do
               |> String.slice(0..-8)
             filepath_bob = "/tmp/" <> filename_bob <> ".csv"
             IO.puts("result log file in Bob: " <> filepath_bob)
+            # time: デバイス内で受信完了してから送信終了までにかかった時間
+            File.write(filepath_bob, "count,time,heap_size,minor_gcs\r\n")
             # generate process for output of measurement logs
             bob_output_pid = spawn(NervesRtPerf, :output, [filepath_bob, ""])
-            # time: デバイス内で受信完了してから送信終了までにかかった時間
-            File.write(filepath_alice, "count,time,heap_size,minor_gcs\r\n")
 
             # start node and connect with "Bob"
             conn_node = NervesRtPerf.NodeConnect.start(name)
@@ -75,9 +75,10 @@ defmodule NervesRtPerf.Base.Nodeconnect do
     case count do
       # write results to the log file
       n when n > @eval_loop_num ->
-        send(pid, :ok)
+        send(pid, {:ok})
         IO.puts("Evaluation end:" <> Time.to_string(Time.utc_now()))
         Node.stop
+
         :ok
 
       0 ->
@@ -149,6 +150,7 @@ defmodule NervesRtPerf.Base.Nodeconnect do
             send(pid, {:ok, result})
 
             if count >= @eval_loop_num do
+              send(pid, {:ok})
               Node.stop
             end
         end
