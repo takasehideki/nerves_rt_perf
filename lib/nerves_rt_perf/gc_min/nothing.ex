@@ -27,19 +27,19 @@ defmodule NervesRtPerf.GcMin.Nothing do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
 
       "34" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 34}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 34}])
 
       "233" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 233}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 233}])
 
       "6765" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 6765}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 6765}])
 
       "196418" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:min_heap_size, 196_418}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 196_418}])
 
       _ ->
         IO.puts("Argument error")

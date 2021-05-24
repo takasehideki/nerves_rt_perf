@@ -30,22 +30,22 @@ defmodule NervesRtPerf.GcFsa.Gpioread do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
 
       "zero" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 0}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 0}])
 
       "8191" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 8191}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 8191}])
 
       "32767" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 32767}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 32767}])
 
       "65535" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 65535}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 65535}])
 
       "131071" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:fullsweep_after, 131071}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 131071}])
 
       _ ->
         IO.puts("Argument error")

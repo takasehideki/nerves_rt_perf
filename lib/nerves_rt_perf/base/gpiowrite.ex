@@ -30,7 +30,7 @@ defmodule NervesRtPerf.Base.Gpiowrite do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
 
       _ ->
         IO.puts("Argument error")
