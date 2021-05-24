@@ -1,4 +1,4 @@
-defmodule NervesRtPerf.Priority.Gpioread do
+defmodule NervesRtPerf.Base.Gpioread do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   alias Circuits.GPIO

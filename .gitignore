@@ -19,3 +19,5 @@ erl_crash.dump
 .DS_Store
 
 /_eval_log/
+
+/_eval_pycode/
