@@ -40,6 +40,8 @@ defmodule NervesRtPerf do
 end
 
 defmodule NervesRtPerf.Driver do
+  @gpio_pin System.get_env("GPIO_PIN")
+
   require NervesRtPerf.Base.Gpioread
   require NervesRtPerf.Base.Gpiowrite
   require NervesRtPerf.Base.Nothing
@@ -64,6 +66,7 @@ defmodule NervesRtPerf.Driver do
 
     case param do
       "write" -> # writeとnothing
+        IO.puts("Output device should be connected at #{@gpio_pin} now. ")
         # Base
         IO.puts("---------- Base ----------")
 
@@ -153,6 +156,7 @@ defmodule NervesRtPerf.Driver do
         IO.puts("NervesRtPerf.Priority.Nothing finished")
 
       "read" ->
+        IO.puts("Input device should be connected at #{@gpio_pin} now. ")
         # Base
         IO.puts("---------- Base ----------")
 
