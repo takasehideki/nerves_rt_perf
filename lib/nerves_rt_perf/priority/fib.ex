@@ -27,13 +27,13 @@ defmodule NervesRtPerf.Priority.Fib do
 
     case param do
       "normal" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
 
       "low" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:priority, :low}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:priority, :low}])
 
       "high" ->
-        Process.spawn(__MODULE__, :eval_loop, [1, pid], [{:priority, :high}])
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:priority, :high}])
 
       _ ->
         IO.puts("Argument error")
