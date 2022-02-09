@@ -1,4 +1,4 @@
-defmodule NervesRtPerf.GcMin.Sleep do
+defmodule NervesRtPerf.GcFsa.Nothing do
   # macro setting for const value (defined by NervesRtPerf)
   require NervesRtPerf
   @eval_loop_num NervesRtPerf.eval_loop_num()
@@ -29,17 +29,20 @@ defmodule NervesRtPerf.GcMin.Sleep do
       "normal" ->
         Process.spawn(__MODULE__, :eval_loop, [0, pid], [])
 
-      "34" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 34}])
+      "zero" ->
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 0}])
 
-      "233" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 233}])
+      "8191" ->
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 8191}])
 
-      "6765" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 6765}])
+      "32767" ->
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 32767}])
 
-      "196418" ->
-        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:min_heap_size, 196_418}])
+      "65535" ->
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 65535}])
+
+      "131071" ->
+        Process.spawn(__MODULE__, :eval_loop, [0, pid], [{:fullsweep_after, 131071}])
 
       _ ->
         IO.puts("Argument error")
@@ -61,14 +64,13 @@ defmodule NervesRtPerf.GcMin.Sleep do
       0 ->
         IO.puts("Evaluation start:" <> Time.to_string(Time.utc_now()))
         # ignore evaluation for the first time to avoid cache influence
-        :timer.sleep(@sleep_interval)
         :timer.sleep(5)
         eval_loop(count + 1, pid)
 
       _ ->
         # measurement point
         t1 = :erlang.monotonic_time()
-        :timer.sleep(@sleep_interval)
+        _ = @sleep_interval
         t2 = :erlang.monotonic_time()
         time = :erlang.convert_time_unit(t2 - t1, :native, :microsecond)
 
